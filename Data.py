@@ -12,10 +12,10 @@ class Data:
     def __init__(self):
         # initialize time and frequency vectors (and other basic properties)
         self.N_points = 128
-        self.t_max = 750 #150
+        self.t_max = 750
         self.switch_duration_s = 55 * 1e-15
         self.wvl_0 = 1.8 * 1e-6
-        self.pulse_duration_s = 10*1e-15 #10 * 1e-15
+        self.pulse_duration_s = 10*1e-15 
         self.f0_Hz = c / self.wvl_0
         self._w0 = 2 * np.pi * self.f0_Hz
 
@@ -195,3 +195,4 @@ if __name__ == "__main__":
     # TIP: plot here to see the frost trace too
     # plt.imshow(np.abs(frost))
     # plt.show()
+
