@@ -3,12 +3,11 @@ from scipy.constants import c
 import warnings
 import scipy
 import matplotlib.pyplot as plt
-import tensorflow as tf
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 
-"""Class to generate x axis, pulse, switch, and FROSt."""
+"""Class to generate x axis, pulse, simple integrated switch, and FROSt."""
 class Data:
     def __init__(self):
         # initialize time and frequency vectors (and other basic properties)
@@ -24,10 +23,9 @@ class Data:
         self.dt = abs(self.t_s[1] - self.t_s[0])
         self.w_Hz = 2*np.pi*(np.fft.fftshift(np.fft.fftfreq(len(self.t_s), self.dt)))
         self.dw = abs(self.w_Hz[1] - self.w_Hz[0])
-        self.generate_FTL_switch()
+        self.generate_switch()
         self.generate_FTL_pulse()
 
-        
     @staticmethod
     def model_FS(wvl_um, omega, central_wavelength = 1.8, Length = 0.035):
         model_n = np.sqrt((0.6961663*(wvl_um)**2/((wvl_um)**2-0.0046791482584))+(0.4079426*(wvl_um)**2/((wvl_um)**2-0.01351206307396))+(0.8974794*(wvl_um)**2/((wvl_um)**2-(9.896161)**2)+1))
@@ -47,9 +45,8 @@ class Data:
         self.complex_Ew_field_FS = self.complex_Ew_field * np.exp(1j * disp_phase)
         self.complex_Et_field_FS = self._ifft_(self.complex_Ew_field_FS)
 
-    def generate_FTL_switch(self):
+    def generate_switch(self):
         # generate switch envelope 
-        # self.delay = np.linspace(start = -1.5*self.t_max, stop = 1.5*self.t_max, num = 3*self.N_points) * 1e-15
         sigma = self.switch_duration_s / (2 * np.sqrt(2 * np.log(2)))
         self.__gauss_amplitude_t = (np.exp(-0.5*(self.t_s ** 2 / (sigma ** 2))))
         self.__gauss_amplitude_t /= max(self.__gauss_amplitude_t)
@@ -61,11 +58,6 @@ class Data:
         self.switch_amplitude /= max(self.switch_amplitude)
         self.switch_amplitude = np.flip(self.switch_amplitude)
         self.switch_spectrum = self._fft_(self.switch_amplitude)
-
-    def generate_chirped_switch(self, phase_w):       
-        self.complex_Ew_switch = (self.switch_spectrum * np.exp(1j * phase_w))
-        self.complex_Et_switch = self._ifft_(self.complex_Ew_switch)
-        self.complex_Et_switch /= np.max(self.complex_Et_switch)
 
     def generate_FTL_pulse(self): 
         # make time pulse with nul phase
@@ -161,8 +153,8 @@ class Data:
         return scipy.ndimage.zoom(trace, new_shape)
     
     @staticmethod
-    def save_trace(trace_BL, path):
-        np.savez_compressed(path, trace_BL = trace_BL) #, trace_FS = trace_FS)
+    def save_trace(trace, path):
+        np.savez_compressed(path, trace = trace)
 
     @staticmethod
     def save_pulse(pulse, path):
